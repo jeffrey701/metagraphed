@@ -1613,6 +1613,7 @@
           "author": { "type": ["string", "null"] },
           "extrinsic_count": { "type": ["integer", "null"] },
           "event_count": { "type": ["integer", "null"] },
+          "spec_version": { "type": ["integer", "null"] },
           "observed_at": { "type": ["string", "null"], "format": "date-time" }
         }
       },
@@ -1660,7 +1661,9 @@
           "signer": { "type": ["string", "null"] },
           "call_module": { "type": ["string", "null"] },
           "call_function": { "type": ["string", "null"] },
+          "call_args": { "type": ["object", "array", "string", "number", "boolean", "null"] },
           "success": { "type": ["boolean", "null"] },
+          "fee_tao": { "type": ["number", "null"] },
           "observed_at": { "type": ["string", "null"], "format": "date-time" }
         }
       },

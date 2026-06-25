@@ -1297,6 +1297,12 @@
               "string",
               "null"
             ]
+          },
+          "spec_version": {
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3720,6 +3726,16 @@
               "null"
             ]
           },
+          "call_args": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
           "call_function": {
             "type": [
               "string",
@@ -3741,6 +3757,12 @@
           "extrinsic_index": {
             "type": [
               "integer",
+              "null"
+            ]
+          },
+          "fee_tao": {
+            "type": [
+              "number",
               "null"
             ]
           },

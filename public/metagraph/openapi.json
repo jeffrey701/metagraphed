@@ -1311,6 +1311,12 @@
               "string",
               "null"
             ]
+          },
+          "spec_version": {
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3734,6 +3740,16 @@
               "null"
             ]
           },
+          "call_args": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
           "call_function": {
             "type": [
               "string",
@@ -3755,6 +3771,12 @@
           "extrinsic_index": {
             "type": [
               "integer",
+              "null"
+            ]
+          },
+          "fee_tao": {
+            "type": [
+              "number",
               "null"
             ]
           },
@@ -13810,7 +13832,8 @@
                       "event_count": 1,
                       "extrinsic_count": 1,
                       "observed_at": "2026-06-01T00:00:00.000Z",
-                      "parent_hash": "a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1"
+                      "parent_hash": "a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1",
+                      "spec_version": 1
                     },
                     "ref": "example",
                     "schema_version": 1
@@ -16927,10 +16950,12 @@
                   "data": {
                     "extrinsic": {
                       "block_number": 5000000,
+                      "call_args": {},
                       "call_function": "example",
                       "call_module": "example",
                       "extrinsic_hash": "a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1",
                       "extrinsic_index": 1,
+                      "fee_tao": 0.5,
                       "observed_at": "2026-06-01T00:00:00.000Z",
                       "signer": "example",
                       "success": false
