@@ -936,11 +936,11 @@ export async function handleRequest(request, env = {}, ctx = {}) {
   // Both are worker-owned (see wrangler `run_worker_first`) so they carry the
   // right headers/content-type instead of 404-ing through to the static assets.
   if (url.pathname === "/" || url.pathname === "") {
-    return homepageResponse(request);
+    return await homepageResponse(request);
   }
 
   if (url.pathname === "/.well-known/api-catalog") {
-    return apiCatalogResponse(request);
+    return await apiCatalogResponse(request);
   }
 
   if (url.pathname === "/.well-known/mcp/server-card.json") {
@@ -1777,6 +1777,31 @@ export async function readEconomicsCurrentKv(env, now = Date.now()) {
   return value;
 }
 
+// Chain-events index heartbeat read. Memoized per-isolate at a short TTL so
+// repeated /health probes on warm isolates don't issue a billed D1 query per
+// request. Null results are not cached (cold/unbound store stays re-queried).
+// Keyed on env so tests / multi-binding callers never cross-read.
+export const CHAIN_EVENTS_DB_TTL_MS = 30_000;
+let chainEventsDbMemo = { env: null, value: null, expiresAt: 0 };
+
+export async function readChainEventsDb(env, now = Date.now()) {
+  if (chainEventsDbMemo.env === env && now < chainEventsDbMemo.expiresAt) {
+    return chainEventsDbMemo.value;
+  }
+  if (!env?.METAGRAPH_HEALTH_DB?.prepare) return null;
+  const rows = await d1All(
+    env,
+    "SELECT block_number AS block, observed_at AS at FROM account_events " +
+      "ORDER BY observed_at DESC LIMIT 1",
+    [],
+  );
+  const value = rows[0] || null;
+  if (value !== null) {
+    chainEventsDbMemo = { env, value, expiresAt: now + CHAIN_EVENTS_DB_TTL_MS };
+  }
+  return value;
+}
+
 configureAnalyticsRoutes({ readHealthMetaKv, readEconomicsCurrentKv });
 
 async function resolveSubnetSlugRoute(
@@ -2182,7 +2207,7 @@ function matchRoute(pathname) {
 }
 
 // Lightweight readiness probe for uptime checks and load balancers. Reports
-// which bindings are wired without touching R2/KV (no I/O, no cold-start cost).
+// which bindings are wired; KV reads are in-isolate memoized.
 async function handleHealthRequest(request, env) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return errorResponse(
@@ -2243,19 +2268,17 @@ async function handleHealthRequest(request, env) {
   // best-effort + null on a cold/unbound store.
   let chainEvents = null;
   if (bindings.health_db) {
-    const rows = await d1All(
-      env,
-      "SELECT block_number AS block, observed_at AS at FROM account_events " +
-        "ORDER BY observed_at DESC LIMIT 1",
-      [],
-    );
-    const row = rows[0] || {};
-    const atMs = Number(row.at);
-    const fresh = Number.isFinite(atMs);
+    const chainEventsRow = await readChainEventsDb(env);
+    const chainEventsAtMs = chainEventsRow ? Number(chainEventsRow.at) : NaN;
+    const chainEventsFresh = Number.isFinite(chainEventsAtMs);
     chainEvents = {
-      latest_indexed_block: row.block ?? null,
-      latest_event_at: fresh ? new Date(atMs).toISOString() : null,
-      age_seconds: fresh ? Math.round((Date.now() - atMs) / 1000) : null,
+      latest_indexed_block: chainEventsRow?.block ?? null,
+      latest_event_at: chainEventsFresh
+        ? new Date(chainEventsAtMs).toISOString()
+        : null,
+      age_seconds: chainEventsFresh
+        ? Math.round((Date.now() - chainEventsAtMs) / 1000)
+        : null,
     };
   }
 
