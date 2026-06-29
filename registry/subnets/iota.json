@@ -1,9 +1,4 @@
 {
-  "schema_version": 1,
-  "netuid": 9,
-  "name": "iota",
-  "slug": "sn-9",
-  "status": "active",
   "categories": [
     "baseline-curated",
     "identity-reviewed",
@@ -12,81 +7,103 @@
     "official-source-repo",
     "official-website"
   ],
-  "source_repo": "https://github.com/macrocosm-os/iota",
-  "dashboard_url": "https://iota.macrocosmos.ai/dashboard/mainnet",
-  "website_url": "https://iota.macrocosmos.ai/",
-  "notes": "Reviewed overlay for SN9 using the official IOTA website, public dashboard, and source repository. The previously discovered Macrocosmos IOTA mining setup URL currently returns 404 and is intentionally not promoted.",
+  "contact": "support@macrocosmos.ai",
   "curation": {
-    "level": "maintainer-reviewed",
-    "review_state": "maintainer-reviewed",
-    "reviewed_at": "2026-06-08T09:50:00.000Z",
-    "verified_at": "2026-06-08T09:50:00.000Z",
-    "source_count": 5,
     "gap_notes": [
       "Previously discovered IOTA docs URL currently returns 404.",
       "No verified safe public subnet API endpoint yet.",
       "No verified OpenAPI/Swagger schema yet.",
       "No verified SSE/event stream yet.",
       "No verified standalone static data artifact yet."
-    ]
+    ],
+    "level": "maintainer-reviewed",
+    "review_state": "maintainer-reviewed",
+    "reviewed_at": "2026-06-08T09:50:00.000Z",
+    "source_count": 5,
+    "verified_at": "2026-06-08T09:50:00.000Z"
   },
+  "dashboard_url": "https://iota.macrocosmos.ai/dashboard/mainnet",
+  "name": "iota",
+  "netuid": 9,
+  "notes": "Reviewed overlay for SN9 using the official IOTA website, public dashboard, and source repository. The previously discovered Macrocosmos IOTA mining setup URL currently returns 404 and is intentionally not promoted.",
+  "schema_version": 1,
+  "slug": "sn-9",
+  "source_repo": "https://github.com/macrocosm-os/iota",
+  "status": "active",
   "surfaces": [
     {
-      "id": "sn-9-iota-website",
-      "name": "IOTA website",
-      "kind": "website",
-      "url": "https://iota.macrocosmos.ai/",
-      "provider": "macrocosmos",
       "auth_required": false,
       "authority": "official",
-      "public_safe": true,
-      "source_urls": ["https://github.com/macrocosm-os/iota"],
+      "id": "sn-9-iota-website",
+      "kind": "website",
+      "name": "IOTA website",
+      "notes": "Official IOTA website.",
       "probe": {
         "enabled": true,
-        "method": "HEAD",
         "expect": "html",
+        "method": "HEAD",
         "timeout_ms": 10000
       },
-      "notes": "Official IOTA website."
+      "provider": "macrocosmos",
+      "public_safe": true,
+      "source_urls": ["https://github.com/macrocosm-os/iota"],
+      "url": "https://iota.macrocosmos.ai/"
     },
     {
-      "id": "sn-9-iota-dashboard",
-      "name": "IOTA dashboard",
-      "kind": "dashboard",
-      "url": "https://iota.macrocosmos.ai/dashboard/mainnet",
-      "provider": "macrocosmos",
       "auth_required": false,
       "authority": "official",
+      "id": "sn-9-iota-dashboard",
+      "kind": "dashboard",
+      "name": "IOTA dashboard",
+      "notes": "Official public IOTA dashboard linked from the source repository.",
+      "probe": {
+        "enabled": true,
+        "expect": "html",
+        "method": "HEAD",
+        "timeout_ms": 10000
+      },
+      "provider": "macrocosmos",
       "public_safe": true,
       "source_urls": [
         "https://github.com/macrocosm-os/iota/blob/main/README.md"
       ],
-      "probe": {
-        "enabled": true,
-        "method": "HEAD",
-        "expect": "html",
-        "timeout_ms": 10000
-      },
-      "notes": "Official public IOTA dashboard linked from the source repository."
+      "url": "https://iota.macrocosmos.ai/dashboard/mainnet"
     },
     {
-      "id": "sn-9-iota-source",
-      "name": "IOTA source repository",
-      "kind": "source-repo",
-      "url": "https://github.com/macrocosm-os/iota",
-      "provider": "macrocosmos",
       "auth_required": false,
       "authority": "official",
-      "public_safe": true,
-      "source_urls": ["https://github.com/macrocosm-os/iota"],
+      "id": "sn-9-iota-source",
+      "kind": "source-repo",
+      "name": "IOTA source repository",
+      "notes": "Official IOTA source repository.",
       "probe": {
         "enabled": true,
-        "method": "HEAD",
         "expect": "any",
+        "method": "HEAD",
         "timeout_ms": 10000
       },
-      "notes": "Official IOTA source repository."
+      "provider": "macrocosmos",
+      "public_safe": true,
+      "source_urls": ["https://github.com/macrocosm-os/iota"],
+      "url": "https://github.com/macrocosm-os/iota"
+    },
+    {
+      "auth_required": false,
+      "authority": "community",
+      "id": "sn-9-macrocosmos-docs",
+      "kind": "docs",
+      "name": "iota docs",
+      "provider": "macrocosmos",
+      "public_safe": true,
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "jeffrey701"
+      },
+      "source_urls": [
+        "https://github.com/macrocosm-os/iota/blob/main/README.md"
+      ],
+      "url": "https://docs.macrocosmos.ai/subnets/subnet-9-iota"
     }
   ],
-  "contact": "support@macrocosmos.ai"
+  "website_url": "https://iota.macrocosmos.ai/"
 }
