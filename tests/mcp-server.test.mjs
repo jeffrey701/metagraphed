@@ -619,6 +619,32 @@ describe("MCP transport handling", () => {
     assert.equal(res.status, 202);
   });
 
+  test("a concurrently-dispatched mixed batch correlates responses by id, not position (#2060)", async () => {
+    // Requests interleaved with notifications. The batch is now dispatched
+    // concurrently (Promise.all), so correctness must hold via the JSON-RPC `id`
+    // correlation regardless of completion order: every request id appears
+    // exactly once and the notifications are dropped.
+    const res = await rpc([
+      { jsonrpc: "2.0", id: 10, method: "tools/list" },
+      { jsonrpc: "2.0", method: "notifications/initialized" },
+      { jsonrpc: "2.0", id: 20, method: "ping" },
+      { jsonrpc: "2.0", method: "notifications/cancelled" },
+      { jsonrpc: "2.0", id: 30, method: "ping" },
+    ]);
+    assert.ok(Array.isArray(res.body));
+    assert.equal(res.body.length, 3, "three requests → three responses");
+    assert.deepEqual(
+      res.body.map((r) => r.id).sort((a, b) => a - b),
+      [10, 20, 30],
+      "every request id is present exactly once",
+    );
+    // Each response is correlated to its own request by id (not by array slot).
+    const byId = new Map(res.body.map((r) => [r.id, r]));
+    assert.ok(Array.isArray(byId.get(10).result.tools), "id 10 → tools/list");
+    assert.deepEqual(byId.get(20).result, {}, "id 20 → ping result");
+    assert.deepEqual(byId.get(30).result, {}, "id 30 → ping result");
+  });
+
   test("an empty batch is an invalid request", async () => {
     const res = await rpc([]);
     assert.equal(res.status, 400);

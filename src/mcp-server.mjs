@@ -4493,11 +4493,17 @@ export async function handleMcpRequest(request, env = {}, deps = {}) {
         400,
       );
     }
-    const responses = [];
-    for (const message of body) {
-      const response = await dispatchMessage(message, ctx);
-      if (response) responses.push(response);
-    }
+    // Dispatch independent batch members concurrently (#2060): JSON-RPC 2.0
+    // correlates responses by `id`, not position, and the handlers are read-only
+    // over D1/artifacts with no shared mutable `ctx` state, so a batch's
+    // wall-clock becomes the slowest member instead of the sum. Fan-out stays
+    // bounded by the MAX_MCP_BATCH_LENGTH check above. Promise.all preserves order
+    // and the null filter drops notifications, so the 202-on-all-notifications
+    // path is unchanged.
+    const settled = await Promise.all(
+      body.map((message) => dispatchMessage(message, ctx)),
+    );
+    const responses = settled.filter(Boolean);
     if (responses.length === 0) {
       return new Response(null, { status: 202, headers: MCP_HEADERS });
     }
