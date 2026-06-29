@@ -615,6 +615,47 @@ test("buildChainFees computes per-day averages + null avg on a zero-extrinsic da
   assert.equal(out.top_fee_payers[0].signer, "5Pay");
 });
 
+test("buildChainFees drops junk daily rows and payer rows without a signer", () => {
+  const out = buildChainFees({
+    window: "30d",
+    dailyRows: [
+      null,
+      "not-an-object",
+      { extrinsic_count: 5 }, // no string `day` → dropped
+      { day: "2026-06-20", extrinsic_count: 10, total_fee_tao: 2.0 },
+    ],
+    payerRows: [
+      null,
+      { total_fee_tao: 1.0 }, // missing signer → dropped
+      { signer: "", total_fee_tao: 1.0 }, // empty signer → dropped
+      { signer: "5Keep", total_fee_tao: 0.4, extrinsic_count: 4 },
+    ],
+  });
+  // Only the one well-formed daily row + the one valid payer survive the filters.
+  assert.equal(out.day_count, 1);
+  assert.deepEqual(
+    out.daily.map((d) => d.day),
+    ["2026-06-20"],
+  );
+  assert.equal(out.daily[0].avg_fee_tao, 0.2); // 2.0 / 10
+  assert.deepEqual(
+    out.top_fee_payers.map((p) => p.signer),
+    ["5Keep"],
+  );
+});
+
+test("buildChainFees is schema-stable on empty input (cold store)", () => {
+  const out = buildChainFees({ window: "7d" });
+  assert.deepEqual(out, {
+    schema_version: 1,
+    window: "7d",
+    observed_at: null,
+    day_count: 0,
+    daily: [],
+    top_fee_payers: [],
+  });
+});
+
 test("GET /api/v1/chain/fees returns daily series + top payers, COALESCEs NULL fees", async () => {
   const captured = [];
   const env = {
