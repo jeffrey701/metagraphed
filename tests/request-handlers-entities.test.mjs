@@ -2021,6 +2021,35 @@ describe("handleAccountEvents", () => {
     );
   });
 
+  test("rejects an unknown event kind with 400", async () => {
+    const { env, captures } = dbWith({
+      accountEvents: [accountEventRow()],
+    });
+    const res = await handleAccountEvents(
+      req(`/api/v1/accounts/${SS58}/events`),
+      env,
+      SS58,
+      url(`/api/v1/accounts/${SS58}/events?kind=Nonexistent`),
+    );
+    const body = await errorJson(res);
+    assert.equal(body.meta.parameter, "kind");
+    assert.match(body.error.message, /not a supported event kind/);
+    assert.equal(captures.sql.length, 0);
+  });
+
+  test("accepts a non-SubtensorModule ingested kind (Transfer), not just INDEXED_EVENT_KINDS", async () => {
+    const { env, captures } = dbWith({
+      accountEvents: [accountEventRow({ event_kind: "Transfer" })],
+    });
+    await handleAccountEvents(
+      req(`/api/v1/accounts/${SS58}/events`),
+      env,
+      SS58,
+      url(`/api/v1/accounts/${SS58}/events?kind=Transfer`),
+    );
+    assert.ok(captures.sql.some((s) => /event_kind = \?/.test(s)));
+  });
+
   test("cursor uses keyset seek instead of offset", async () => {
     const { env, captures } = dbWith({
       accountEvents: [accountEventRow({ block_number: 150, event_index: 2 })],

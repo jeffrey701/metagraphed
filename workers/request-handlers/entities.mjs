@@ -843,10 +843,22 @@ export async function handleAccountEvents(request, env, ss58, url) {
     "block_end",
   );
   if (blockEnd.error) return analyticsQueryError(blockEnd.error);
+  const kind = url.searchParams.get("kind");
+  // Reject an unknown ?kind= up front, validated against the FULL ingested set
+  // (not just INDEXED_EVENT_KINDS, which would wrongly reject Transfer/NetworkAdded
+  // etc.). A typo/nonexistent kind otherwise matches nothing and forces a full
+  // index walk on this public, ~60s-cached route — parity with handleSubnetEvents
+  // (#2081).
+  if (kind != null && !INGESTED_EVENT_KINDS.includes(kind)) {
+    return analyticsQueryError({
+      parameter: "kind",
+      message: `"${kind}" is not a supported event kind. Supported: ${INGESTED_EVENT_KINDS.join(", ")}.`,
+    });
+  }
   const data = await loadAccountEvents(d1Runner(env), ss58, {
     limit: url.searchParams.get("limit"),
     offset: url.searchParams.get("offset"),
-    kind: url.searchParams.get("kind"),
+    kind,
     cursor: url.searchParams.get("cursor"),
     blockStart: blockStart.value,
     blockEnd: blockEnd.value,
