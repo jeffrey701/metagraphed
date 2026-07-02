@@ -72,6 +72,30 @@ describe("deriveDomainTags", () => {
     );
   });
 
+  test("tags 'market making' / 'market maker' for the finance rule", () => {
+    // Market making is a core DeFi/finance capability, but the finance rule
+    // had no term for it — a "market maker" or "market making" description
+    // dropped the finance tag. Cover both the spaced and hyphenated spellings
+    // and the maker/making inflections with one bounded `market[- ]mak\w*`.
+    for (const description of [
+      "An on-chain market maker",
+      "Automated market making protocol",
+      "A decentralized market-maker for subnet liquidity provisioning",
+    ]) {
+      assert.ok(
+        deriveDomainTags({ description }).includes("finance"),
+        `expected finance tag for ${JSON.stringify(description)}`,
+      );
+    }
+    // "marketplace" must NOT trip the new term (no maker/making sense).
+    assert.equal(
+      deriveDomainTags({ description: "A data marketplace" }).includes(
+        "finance",
+      ),
+      false,
+    );
+  });
+
   test("accepts curated categories that are already in the vocabulary", () => {
     const tags = deriveDomainTags({
       categories: ["Finance", "privacy"],

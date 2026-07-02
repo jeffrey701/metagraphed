@@ -22,7 +22,7 @@ const DOMAIN_TAG_RULES = [
   ],
   [
     "finance",
-    /\b(financ\w*|trading|defi|portfolio|hedge|liquidity|yield farming|price predict\w*)\b/i,
+    /\b(financ\w*|trading|defi|portfolio|hedge|liquidity|yield farming|market[- ]mak\w*|price predict\w*)\b/i,
   ],
   [
     "inference",
