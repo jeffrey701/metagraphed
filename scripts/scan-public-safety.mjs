@@ -17,7 +17,13 @@ const targetRoots = [
 const patterns = [
   { name: "local absolute path", regex: /\/Users\/|\/home\/|C:\\Users\\/ },
   { name: "private key marker", regex: /BEGIN [A-Z ]*PRIVATE KEY/ },
-  { name: "github token", regex: /ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+/ },
+  // Covers every GitHub token prefix, not just the personal-access ghp_: gho_
+  // (OAuth), ghu_ (user-to-server), ghs_ (server-to-server / App installation),
+  // and ghr_ (refresh) are all real, leakable credentials in the same family.
+  {
+    name: "github token",
+    regex: /gh[opsur]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+/,
+  },
   { name: "openai-style token", regex: /sk-[A-Za-z0-9]{20,}/ },
   { name: "slack-style token", regex: /xox[baprs]-[A-Za-z0-9-]+/ },
   {
