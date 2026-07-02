@@ -22,7 +22,7 @@ const patterns = [
   // and ghr_ (refresh) are all real, leakable credentials in the same family.
   {
     name: "github token",
-    regex: /gh[opsur]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+/,
+    regex: /(?:gh[opsur]|github_pat)_[A-Za-z0-9_]+/,
   },
   { name: "openai-style token", regex: /sk-[A-Za-z0-9]{20,}/ },
   { name: "slack-style token", regex: /xox[baprs]-[A-Za-z0-9-]+/ },

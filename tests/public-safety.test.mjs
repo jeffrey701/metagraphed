@@ -199,13 +199,13 @@ describe("captured-fixture body scan", () => {
   test("flags every GitHub token prefix, not just ghp_", async () => {
     // ghp_ is the personal-access prefix, but gho_/ghu_/ghs_/ghr_ (OAuth,
     // user-to-server, App installation, refresh) are the same leakable family.
-    const leaks = [
-      "ghp_abcdefghijklmnopqrstuvwxyz0123456789",
-      "gho_abcdefghijklmnopqrstuvwxyz0123456789",
-      "ghu_abcdefghijklmnopqrstuvwxyz0123456789",
-      "ghs_abcdefghijklmnopqrstuvwxyz0123456789",
-      "ghr_abcdefghijklmnopqrstuvwxyz0123456789",
-    ];
+    // Assemble each token from a prefix + shared body at runtime so the source
+    // never commits a contiguous token-shaped literal (which secret scanners
+    // would flag as a leaked credential in the diff).
+    const body = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const leaks = ["ghp", "gho", "ghu", "ghs", "ghr"].map(
+      (prefix) => `${prefix}_${body}`,
+    );
     await fs.writeFile(TEST_PUBLIC_PATH, `${leaks.join("\n")}\n`, "utf8");
     const output = runScanOutput();
     for (const [index] of leaks.entries()) {
