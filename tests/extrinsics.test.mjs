@@ -159,8 +159,11 @@ test("formatExtrinsic drops an out-of-range observed_at instead of throwing", ()
   assert.equal(out.observed_at, null);
   // A valid timestamp still renders as ISO (no regression).
   assert.equal(
-    formatExtrinsic({ block_number: 5, extrinsic_index: 0, observed_at: 1750000000000 })
-      .observed_at,
+    formatExtrinsic({
+      block_number: 5,
+      extrinsic_index: 0,
+      observed_at: 1750000000000,
+    }).observed_at,
     new Date(1750000000000).toISOString(),
   );
 });
