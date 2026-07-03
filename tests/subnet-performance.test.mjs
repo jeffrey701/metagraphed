@@ -114,6 +114,22 @@ describe("buildSubnetPerformance", () => {
     assert.equal(out.captured_at, null);
   });
 
+  test("captureStamp rejects every unstampable captured_at without throwing", () => {
+    // Cover each reject arm: a non-finite epoch, a non-positive epoch, and a
+    // cell that is neither a string nor a number — all degrade to null.
+    const out = buildSubnetPerformance(
+      [
+        { incentive: 0.5, captured_at: Number.NaN }, // non-finite
+        { incentive: 0.4, captured_at: 0 }, // ms <= 0
+        { incentive: 0.3, captured_at: -1000 }, // ms <= 0
+        { incentive: 0.2, captured_at: true }, // neither string nor number
+        { incentive: 0.1, captured_at: {} }, // neither string nor number
+      ],
+      7,
+    );
+    assert.equal(out.captured_at, null);
+  });
+
   test("incentive concentration is over ALL neurons with a positive incentive", () => {
     const out = buildSubnetPerformance(ROWS, 7);
     // incentives 0.6/0.3/0.1 are positive (the 0 is dropped) → 3 holders.
