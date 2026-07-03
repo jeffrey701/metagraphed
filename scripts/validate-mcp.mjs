@@ -384,6 +384,11 @@ assert.ok(
   Array.isArray(metaValidators.neurons),
   "get_subnet_metagraph (validator_permit) must return neurons[]",
 );
+const sourceSnaps = await callOk("get_source_snapshots", {});
+assert.ok(
+  Array.isArray(sourceSnaps.sources),
+  "get_source_snapshots must return sources[]",
+);
 const vals = await callOk("list_subnet_validators", { netuid: 7 });
 assert.ok(
   Array.isArray(vals.validators),

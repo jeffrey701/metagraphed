@@ -5683,6 +5683,38 @@ describe("MCP economics + metagraph data tools", () => {
     assert.equal(out.validator_trust.count, 1);
   });
 
+  test("get_source_snapshots returns the source provenance artifact", async () => {
+    const snapDeps = makeDeps({
+      "/metagraph/source-snapshots.json": {
+        schema_version: 1,
+        sources: [
+          {
+            id: "native-chain",
+            kind: "native-chain",
+            hash: "a".repeat(64),
+            captured_at: "2026-01-01T00:00:00Z",
+            path: "/metagraph/native.json",
+            record_count: 42,
+          },
+        ],
+        summary: {
+          source_count: 1,
+          provider_count: 1,
+          candidate_count: 0,
+          overlay_count: 0,
+          adapter_snapshot_count: 0,
+          verification_result_count: 0,
+        },
+      },
+    });
+    const res = await callTool("get_source_snapshots", {}, { deps: snapDeps });
+    const out = res.body.result.structuredContent;
+    assert.equal(out.sources.length, 1);
+    assert.equal(out.sources[0].kind, "native-chain");
+    assert.equal(out.sources[0].record_count, 42);
+    assert.equal(out.summary.source_count, 1);
+  });
+
   test("get_subnet_concentration_history defaults to 30d and returns points", async () => {
     const res = await callTool(
       "get_subnet_concentration_history",

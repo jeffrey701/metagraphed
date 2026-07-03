@@ -192,7 +192,7 @@ const MCP_LATEST_PROTOCOL = MCP_PROTOCOL_VERSIONS[0];
 //   - change or remove a tool's I/O       → MAJOR
 //   - behavioral-only fix (no I/O change) → PATCH
 // Reported in serverInfo.version (initialize) + the generated server-card.json.
-export const MCP_SERVER_VERSION = "1.20.0";
+export const MCP_SERVER_VERSION = "1.21.0";
 
 // Window labels accepted by get_chain_transfers — derived from the loader constant
 // so input/output schemas and runtime validation cannot drift.
@@ -1893,6 +1893,28 @@ export const MCP_TOOLS = [
     },
     async handler(_args, ctx) {
       return loadChainPerformance(mcpD1Runner(ctx));
+    },
+  },
+  {
+    name: "get_source_snapshots",
+    title: "Get canonical source input hashes & counts",
+    description:
+      "Fetch the provenance snapshot of the canonical source inputs the " +
+      "pipeline ingested: for each source its stable id, kind " +
+      "(adapter-snapshot, candidate-discovery, native-chain, probe-results, " +
+      "registry-manifest, or review-ledger), the 64-hex content hash, the " +
+      "capture timestamp, the storage path, and the record_count — plus a " +
+      "summary rolling up source_count, provider_count, candidate_count, " +
+      "overlay_count, adapter_snapshot_count, and verification_result_count. " +
+      "Use it to audit exactly which inputs a build derived from and detect " +
+      "when an upstream hash changed. Mirrors GET /api/v1/source-snapshots.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+    async handler(_args, ctx) {
+      return loadArtifactData(ctx, "/metagraph/source-snapshots.json");
     },
   },
   {
@@ -5267,6 +5289,36 @@ const TOOL_OUTPUT_SCHEMAS = {
       trust: { type: ["object", "null"] },
       consensus: { type: ["object", "null"] },
       validator_trust: { type: ["object", "null"] },
+    },
+  },
+  get_source_snapshots: {
+    type: "object",
+    additionalProperties: true,
+    required: ["sources", "summary"],
+    properties: {
+      schema_version: { type: "integer" },
+      generated_at: NULLABLE_STRING,
+      content_hash: NULLABLE_STRING,
+      sources: objectItems({
+        id: { type: "string" },
+        kind: { type: "string" },
+        hash: { type: "string" },
+        captured_at: { type: "string" },
+        path: { type: "string" },
+        record_count: { type: "integer" },
+      }),
+      summary: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          source_count: NULLABLE_INT,
+          provider_count: NULLABLE_INT,
+          candidate_count: NULLABLE_INT,
+          overlay_count: NULLABLE_INT,
+          adapter_snapshot_count: NULLABLE_INT,
+          verification_result_count: NULLABLE_INT,
+        },
+      },
     },
   },
   get_subnet_concentration_history: {
