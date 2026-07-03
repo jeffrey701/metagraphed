@@ -192,7 +192,7 @@ const MCP_LATEST_PROTOCOL = MCP_PROTOCOL_VERSIONS[0];
 //   - change or remove a tool's I/O       → MAJOR
 //   - behavioral-only fix (no I/O change) → PATCH
 // Reported in serverInfo.version (initialize) + the generated server-card.json.
-export const MCP_SERVER_VERSION = "1.20.0";
+export const MCP_SERVER_VERSION = "1.21.0";
 
 // Window labels accepted by get_chain_transfers — derived from the loader constant
 // so input/output schemas and runtime validation cannot drift.
@@ -4236,6 +4236,24 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "get_endpoint_incidents",
+    title: "Get operational endpoint incident history",
+    description:
+      "Fetch the network-wide operational-endpoint incident ledger: every " +
+      "recorded downtime/degradation incident across probed subnet APIs and " +
+      "RPC endpoints, plus a summary rollup (incident/active counts, broken " +
+      "down by kind, layer, provider, severity, and status). Use it to see " +
+      "which surfaces have been unstable. Mirrors GET /api/v1/endpoint-incidents.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+    async handler(_args, ctx) {
+      return loadArtifactData(ctx, "/metagraph/endpoint-incidents.json");
+    },
+  },
+  {
     name: "list_enrichment_targets",
     title: "List ranked enrichment targets",
     description:
@@ -6219,6 +6237,17 @@ const TOOL_OUTPUT_SCHEMAS = {
       recent_changes: { type: "object" },
       top_subnets: { type: "array", items: { type: "object" } },
       generated_at: NULLABLE_STRING,
+    },
+  },
+  get_endpoint_incidents: {
+    type: "object",
+    additionalProperties: true,
+    required: ["summary", "incidents"],
+    properties: {
+      schema_version: { type: "integer" },
+      generated_at: NULLABLE_STRING,
+      summary: { type: "object" },
+      incidents: { type: "array", items: { type: "object" } },
     },
   },
   list_enrichment_targets: {

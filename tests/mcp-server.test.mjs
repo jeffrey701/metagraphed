@@ -1296,6 +1296,23 @@ describe("MCP tools (injected deps)", () => {
     assert.equal(res.body.result.structuredContent.completeness, 0.42);
   });
 
+  test("get_endpoint_incidents returns the incident ledger artifact", async () => {
+    const incidentDeps = makeDeps({
+      "/metagraph/endpoint-incidents.json": {
+        schema_version: 1,
+        summary: { incident_count: 3, active_count: 1 },
+        incidents: [{ surface_id: "7:subnet-api:x", status: "resolved" }],
+      },
+    });
+    const res = await callTool(
+      "get_endpoint_incidents",
+      {},
+      { deps: incidentDeps },
+    );
+    assert.equal(res.body.result.structuredContent.summary.incident_count, 3);
+    assert.equal(res.body.result.structuredContent.incidents.length, 1);
+  });
+
   test("list_enrichment_targets returns ranked coverage-depth targets", async () => {
     const res = await callTool(
       "list_enrichment_targets",
