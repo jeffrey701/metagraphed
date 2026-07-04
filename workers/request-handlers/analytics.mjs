@@ -372,10 +372,10 @@ export async function readIdentityHistoryCacheStamp(env) {
     [],
   );
   if (hasD1FallbackRows(rows)) return null;
-  const observedAt = rows[0]?.observed_at;
-  return Number.isInteger(observedAt) && observedAt > 0
-    ? String(observedAt)
-    : null;
+  // D1 MAX(observed_at) is INTEGER but often surfaces as a numeric string;
+  // coerce before the integer guard (like readNeuronsCacheStamp) so the stamp
+  // is not always null and the identity-history edge cache actually busts.
+  return coerceCapturedAtStamp(rows[0]?.observed_at);
 }
 
 // Edge-cache stamp for routes derived from the neuron_daily rollup (the daily-snapshot tier), NOT
@@ -390,10 +390,10 @@ export async function readNeuronDailyCacheStamp(env) {
     [],
   );
   if (hasD1FallbackRows(rows)) return null;
-  const capturedAt = rows[0]?.captured_at;
-  return Number.isInteger(capturedAt) && capturedAt > 0
-    ? String(capturedAt)
-    : null;
+  // D1 MAX(captured_at) is INTEGER but often surfaces as a numeric string;
+  // coerce before the integer guard (like readNeuronsCacheStamp) so the stamp
+  // is not always null and the neuron_daily edge cache actually busts.
+  return coerceCapturedAtStamp(rows[0]?.captured_at);
 }
 
 export function withNeuronsEdgeCache(

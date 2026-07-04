@@ -483,6 +483,18 @@ describe("readNeuronDailyCacheStamp", () => {
     );
   });
 
+  test("coerces a D1 numeric-string captured_at cell", async () => {
+    // D1 MAX(captured_at) commonly surfaces as a numeric string; a bare
+    // Number.isInteger guard would treat it as invalid and always return null,
+    // so the neuron_daily edge cache would never bust on a new daily snapshot.
+    assert.equal(
+      await readNeuronDailyCacheStamp(
+        stampEnv([{ captured_at: "1700000000000" }]),
+      ),
+      "1700000000000",
+    );
+  });
+
   test("returns null when the D1 read degrades to the empty fallback", async () => {
     assert.equal(await readNeuronDailyCacheStamp({}), null); // no METAGRAPH_HEALTH_DB
   });

@@ -42,6 +42,18 @@ describe("readIdentityHistoryCacheStamp", () => {
   test("returns null when D1 is unbound (fallback rows)", async () => {
     assert.equal(await readIdentityHistoryCacheStamp({}), null);
   });
+
+  test("coerces a D1 numeric-string observed_at cell", async () => {
+    // D1 MAX(observed_at) commonly surfaces as a numeric string; a bare
+    // Number.isInteger guard would treat it as invalid and always return null,
+    // so the identity-history edge cache would never bust on new data.
+    assert.equal(
+      await readIdentityHistoryCacheStamp(
+        envWith([{ observed_at: "1700000000000" }]),
+      ),
+      "1700000000000",
+    );
+  });
 });
 
 // A network feed: identity changes from two subnets, newest first (the loader
