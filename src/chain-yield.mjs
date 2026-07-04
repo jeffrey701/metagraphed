@@ -64,6 +64,18 @@ function captureStamp(value) {
     return { ms: value, value: new Date(value).toISOString() };
   }
   if (typeof value === "string") {
+    // D1 can surface the INTEGER captured_at (epoch ms) column as a numeric
+    // string. Date.parse("1750000000000") is NaN, so the bare Date.parse path
+    // dropped a valid stamp and emitted captured_at: null. Treat an all-digits
+    // string as epoch ms (and return the ISO form, not the raw digits) — the
+    // same handling the sibling chain/concentration + chain/performance
+    // captureStamp helpers already use.
+    if (/^\d+$/.test(value)) {
+      const ms = Number(value);
+      return Number.isFinite(ms)
+        ? { ms, value: new Date(ms).toISOString() }
+        : null;
+    }
     const ms = Date.parse(value);
     if (Number.isFinite(ms)) return { ms, value };
   }

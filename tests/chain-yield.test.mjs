@@ -126,6 +126,16 @@ describe("buildChainYield", () => {
     assert.equal(out.captured_at, "2026-06-15T00:00:00.000Z");
   });
 
+  test("coerces a D1 numeric-string epoch-ms captured_at to an ISO stamp", () => {
+    // D1 can surface the INTEGER captured_at column as a numeric string;
+    // Date.parse("1750000000000") is NaN, so the stamp was previously dropped
+    // and the artifact emitted captured_at: null despite a valid snapshot.
+    const out = buildChainYield([
+      { stake_tao: 1, emission_tao: 0, captured_at: "1750000000000" },
+    ]);
+    assert.equal(out.captured_at, new Date(1_750_000_000_000).toISOString());
+  });
+
   test("coerces numeric-string stake/emission cells from D1", () => {
     const out = buildChainYield([
       {
