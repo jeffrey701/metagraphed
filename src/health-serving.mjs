@@ -1301,10 +1301,15 @@ function liveFromD1Rows(rows) {
     url: r.url,
     status: normalizeProbeStatus(r.status),
     classification: r.classification,
-    latency_ms: Number.isFinite(r.latency_ms) ? r.latency_ms : null,
-    status_code: Number.isInteger(r.status_code) ? r.status_code : null,
-    last_checked: isoFromMs(r.last_checked),
-    last_ok: isoFromMs(r.last_ok),
+    // D1 INTEGER/REAL cells often arrive as numeric strings, and the bare
+    // Number.isFinite/Number.isInteger predicates do not coerce — so a live
+    // surface's real latency/status/timestamps collapsed to null on the D1
+    // fallback path (KV cold). Coerce via toFiniteOrNull first (null-safe: a
+    // genuinely absent cell stays null rather than becoming 0/epoch).
+    latency_ms: toFiniteOrNull(r.latency_ms),
+    status_code: toFiniteOrNull(r.status_code),
+    last_checked: isoFromMs(toFiniteOrNull(r.last_checked)),
+    last_ok: isoFromMs(toFiniteOrNull(r.last_ok)),
   }));
   const byNetuid = new Map();
   for (const row of surfaces) {
