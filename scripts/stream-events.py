@@ -12,8 +12,10 @@ is covered for free.
 Production behavior:
   * Structured, leveled logging (timestamp + level). The per-block line is DEBUG
     (quiet by default); a periodic INFO summary shows liveness without flooding.
-  * A failed ingest POST is logged + skipped (the poller backstop covers it) — it
-    does NOT tear down the subscription.
+  * A transient failed ingest POST is logged + skipped (the poller backstop covers
+    it) — it does NOT tear down the subscription. An ingest auth rejection
+    (401/403) or a TLS/certificate verification failure is NOT transient: both are
+    logged at ERROR and exit the process instead.
   * Exponential backoff + jitter on RPC reconnect; SIGTERM/SIGINT graceful stop.
 
 Deployed on Railway (config-as-code via railway.json); see docs/realtime-streamer.md.
@@ -176,10 +178,11 @@ def decode_head(s, block_number):
 def push(url, payload):
     """POST a JSON payload to an ingest endpoint. Returns True on success; logs WARN
     + returns False on a transient network failure (the CI poller backstop covers
-    the gap). A TLS/certificate verification failure is NOT a transient blip — it's
-    logged at ERROR and the process exits, so a possible MITM on the secret-bearing
-    POST is surfaced (Railway restarts a transient one; a persistent one crash-loops
-    to the retry cap + goes visibly down) rather than silently swallowed."""
+    the gap). Neither an ingest auth rejection (401/403 — token misconfigured or
+    rotated) nor a TLS/certificate verification failure is a transient blip — both
+    are logged at ERROR and the process exits, so a persistent failure is surfaced
+    (Railway restarts a transient one; a persistent one crash-loops to the retry
+    cap + goes visibly down) rather than silently swallowed forever."""
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
@@ -201,6 +204,14 @@ def push(url, payload):
             body = e.read().decode("utf-8", "replace")[:500]
         except Exception:
             body = "<no body>"
+        if e.code in (401, 403):
+            log.error(
+                "ingest push rejected (HTTP %s): %s — auth/token misconfiguration; "
+                "exiting so this does not silently retry forever",
+                e.code,
+                body,
+            )
+            sys.exit(1)
         log.warning(
             "ingest push rejected (HTTP %s): %s — poller backstop will cover this gap",
             e.code,
