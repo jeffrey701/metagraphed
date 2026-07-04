@@ -304,6 +304,48 @@ describe("buildCounterpartyRelationship", () => {
     assert.deepEqual(data.transfers, []);
   });
 
+  test("blank integer evidence cells stay null on relationship transfers (not 0)", () => {
+    for (const blank of ["", "   "]) {
+      const data = buildCounterpartyRelationship(
+        [
+          {
+            block_number: blank,
+            event_index: blank,
+            hotkey: ME,
+            coldkey: "A",
+            netuid: blank,
+            amount_tao: 1,
+            observed_at: Date.UTC(2026, 5, 1),
+          },
+        ],
+        ME,
+        "A",
+        {},
+      );
+      assert.equal(
+        data.transfer_count,
+        1,
+        `transfer_count for ${JSON.stringify(blank)}`,
+      );
+      assert.equal(
+        data.transfers[0].block_number,
+        null,
+        `block_number for ${JSON.stringify(blank)}`,
+      );
+      assert.equal(
+        data.transfers[0].event_index,
+        null,
+        `event_index for ${JSON.stringify(blank)}`,
+      );
+      assert.equal(
+        data.transfers[0].netuid,
+        null,
+        `netuid for ${JSON.stringify(blank)}`,
+      );
+      assert.equal(data.last_block, null);
+    }
+  });
+
   test("skips sparse pair rows while preserving valid string and null evidence cells", () => {
     const data = buildCounterpartyRelationship(
       [
@@ -584,6 +626,22 @@ describe("buildCounterparties — regressions", () => {
       {},
     );
     assert.equal(data.counterparties[0].last_block, null);
+  });
+
+  test("blank block_number cells leave last_block null (not block 0)", () => {
+    // Mirrors the blank-cell guard in blocks.mjs (#2947): Number("") is 0.
+    for (const blank of ["", "   "]) {
+      const data = buildCounterparties(
+        [{ hotkey: "ME", coldkey: "A", amount_tao: 5, block_number: blank }],
+        ME,
+        {},
+      );
+      assert.equal(
+        data.counterparties[0].last_block,
+        null,
+        `last_block for ${JSON.stringify(blank)}`,
+      );
+    }
   });
 
   test("tie-break is deterministic when volumes tie AND last_block is null", () => {
