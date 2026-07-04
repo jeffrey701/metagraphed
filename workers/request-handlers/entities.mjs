@@ -242,6 +242,21 @@ const ACCOUNT_TRANSFERS_CSV_COLUMNS = [
   "direction",
   "observed_at",
 ];
+// Shared column order for the subnet + account event-stream feeds — the
+// formatAccountEvent row shape, stable so a CSV consumer's columns never shift.
+const EVENTS_CSV_COLUMNS = [
+  "block_number",
+  "event_index",
+  "event_kind",
+  "hotkey",
+  "coldkey",
+  "netuid",
+  "uid",
+  "amount_tao",
+  "alpha_amount",
+  "observed_at",
+  "extrinsic_index",
+];
 
 function validateResponseFormat(url) {
   const raw = url.searchParams.get("format");
@@ -1269,7 +1284,7 @@ export async function handleAccount(request, env, ss58) {
 // GET /api/v1/accounts/{ss58}/events: paginated event history (newest first),
 // optional ?kind= filter, ?limit (<=1000) / ?offset.
 export async function handleAccountEvents(request, env, ss58, url) {
-  const validationError = validateQueryParams(url, [
+  const validationError = validateEntityQuery(url, [
     "kind",
     "netuid",
     "block_start",
@@ -1277,6 +1292,7 @@ export async function handleAccountEvents(request, env, ss58, url) {
     "limit",
     "offset",
     "cursor",
+    "format",
   ]);
   if (validationError) return analyticsQueryError(validationError);
   // Optional block-height range filter, parity with the extrinsics and
@@ -1319,6 +1335,15 @@ export async function handleAccountEvents(request, env, ss58, url) {
     blockStart: blockStart.value,
     blockEnd: blockEnd.value,
   });
+  if (csvRequested(url, request)) {
+    return csvResponse(
+      data.events,
+      "account-events",
+      "short",
+      request,
+      EVENTS_CSV_COLUMNS,
+    );
+  }
   return accountEnvelopeResponse(
     request,
     {
@@ -1699,13 +1724,14 @@ export async function handleAccountPortfolio(request, env, ss58) {
 // ?kind= filter; ?limit (<=1000)/?offset. Cold/absent store → schema-stable zero
 // (never 404), mirroring handleAccountEvents.
 export async function handleSubnetEvents(request, env, netuid, url) {
-  const validationError = validateQueryParams(url, [
+  const validationError = validateEntityQuery(url, [
     "kind",
     "block_start",
     "block_end",
     "limit",
     "offset",
     "cursor",
+    "format",
   ]);
   if (validationError) return analyticsQueryError(validationError);
   const kind = url.searchParams.get("kind");
@@ -1740,6 +1766,15 @@ export async function handleSubnetEvents(request, env, netuid, url) {
     blockStart: blockStart.value,
     blockEnd: blockEnd.value,
   });
+  if (csvRequested(url, request)) {
+    return csvResponse(
+      data.events,
+      "subnet-events",
+      "short",
+      request,
+      EVENTS_CSV_COLUMNS,
+    );
+  }
   return envelopeResponse(
     request,
     {

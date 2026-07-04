@@ -998,7 +998,7 @@ export const PUBLIC_ARTIFACTS = [
   artifact(
     "subnet-events",
     "/metagraph/subnets/{netuid}/events.json",
-    "First-party chain-event stream for one subnet (registrations, stake, weights, axon, delegation, lifecycle, transfers), newest first, served live from the account_events D1 tier filtered by netuid at /api/v1/subnets/{netuid}/events (no static file).",
+    "First-party chain-event stream for one subnet (registrations, stake, weights, axon, delegation, lifecycle, transfers), newest first, served live from the account_events D1 tier filtered by netuid at /api/v1/subnets/{netuid}/events; pass ?format=csv to download the page as CSV (no static file).",
     "SubnetEventsArtifact",
   ),
   artifact(
@@ -1034,7 +1034,7 @@ export const PUBLIC_ARTIFACTS = [
   artifact(
     "account-events",
     "/metagraph/accounts/{ss58}/events.json",
-    "Paginated first-party chain-event history for one account (hotkey or coldkey), served live from the account_events D1 tier at /api/v1/accounts/{ss58}/events (no static file).",
+    "Paginated first-party chain-event history for one account (hotkey or coldkey), served live from the account_events D1 tier at /api/v1/accounts/{ss58}/events; pass ?format=csv to download the page as CSV (no static file).",
     "AccountEventsArtifact",
   ),
   artifact(
@@ -2039,16 +2039,16 @@ export const API_ROUTES = [
     "GET",
     "/api/v1/subnets/{netuid}/events",
     "/metagraph/subnets/{netuid}/events.json",
-    "Fetch the first-party chain-event stream for one subnet (registrations, stake, weights, axon, delegation, lifecycle, transfers), newest first, from the account_events D1 tier filtered by netuid. Optional ?kind= filter and ?block_start/?block_end (block-height range); ?limit (<=1000) / ?offset.",
+    "Fetch the first-party chain-event stream for one subnet (registrations, stake, weights, axon, delegation, lifecycle, transfers), newest first, from the account_events D1 tier filtered by netuid. Optional ?kind= filter and ?block_start/?block_end (block-height range); ?limit (<=1000) / ?offset. Pass ?format=csv to download the page as CSV.",
     "short",
     ["subnets", "analytics"],
-    [
+    csvRouteQuery([
       { name: "kind", schema: { type: "string" } },
       { name: "block_start", schema: { type: "integer", minimum: 0 } },
       { name: "block_end", schema: { type: "integer", minimum: 0 } },
       { name: "limit", schema: { type: "integer", minimum: 1, maximum: 1000 } },
       { name: "offset", schema: { type: "integer", minimum: 0 } },
-    ],
+    ]),
     [{ name: "netuid", schema: { type: "integer", minimum: 0 } }],
   ),
   route(
@@ -2134,10 +2134,10 @@ export const API_ROUTES = [
     "GET",
     "/api/v1/accounts/{ss58}/events",
     "/metagraph/accounts/{ss58}/events.json",
-    "Fetch the paginated first-party chain-event history for one account (hotkey or coldkey), newest first. Optional ?kind= filter, ?netuid= to scope to one subnet, and ?block_start/?block_end (block-height range); ?limit (<=1000) / ?offset, or ?cursor= for stable keyset paging (#1851).",
+    "Fetch the paginated first-party chain-event history for one account (hotkey or coldkey), newest first. Optional ?kind= filter, ?netuid= to scope to one subnet, and ?block_start/?block_end (block-height range); ?limit (<=1000) / ?offset, or ?cursor= for stable keyset paging (#1851). Pass ?format=csv to download the page as CSV.",
     "short",
     ["accounts", "analytics"],
-    [
+    csvRouteQuery([
       { name: "kind", schema: { type: "string" } },
       { name: "netuid", schema: { type: "integer", minimum: 0 } },
       { name: "block_start", schema: { type: "integer", minimum: 0 } },
@@ -2145,7 +2145,7 @@ export const API_ROUTES = [
       { name: "limit", schema: { type: "integer", minimum: 1, maximum: 1000 } },
       { name: "offset", schema: { type: "integer", minimum: 0 } },
       { name: "cursor", schema: { type: "string" } },
-    ],
+    ]),
     [{ name: "ss58", schema: { type: "string" } }],
   ),
   route(

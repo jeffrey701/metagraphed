@@ -87,6 +87,56 @@ test("GET /subnets/{netuid}/events rejects an unsupported query param", async ()
   assert.equal(res.status, 400);
 });
 
+const EVENTS_CSV_HEADER =
+  "block_number,event_index,event_kind,hotkey,coldkey,netuid,uid,amount_tao,alpha_amount,observed_at,extrinsic_index";
+
+test("GET /subnets/{netuid}/events?format=csv streams the event rows as CSV", async () => {
+  const env = dbWith({ events: [ROW] });
+  const res = await handleRequest(
+    req("/api/v1/subnets/7/events?format=csv"),
+    env,
+    {},
+  );
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type"), /text\/csv/);
+  assert.match(
+    res.headers.get("content-disposition") ?? "",
+    /attachment; filename="/,
+  );
+  const lines = (await res.text()).trim().split("\r\n");
+  assert.equal(lines[0], EVENTS_CSV_HEADER);
+  assert.equal(lines.length, 2);
+  const cells = lines[1].split(",");
+  assert.equal(cells[0], "4000200"); // block_number
+  assert.equal(cells[2], "NeuronRegistered"); // event_kind
+  assert.equal(cells[5], "7"); // netuid
+});
+
+test("GET /subnets/{netuid}/events?kind=&format=csv keeps the CSV shape when filtering", async () => {
+  const env = dbWith({ events: [{ ...ROW, event_kind: "WeightsSet" }] });
+  const res = await handleRequest(
+    req("/api/v1/subnets/7/events?kind=WeightsSet&format=csv"),
+    env,
+    {},
+  );
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type"), /text\/csv/);
+  const lines = (await res.text()).trim().split("\r\n");
+  assert.equal(lines[0], EVENTS_CSV_HEADER);
+  assert.equal(lines[1].split(",")[2], "WeightsSet");
+});
+
+test("GET /subnets/{netuid}/events?format=csv emits a header-only CSV when cold", async () => {
+  const res = await handleRequest(
+    req("/api/v1/subnets/7/events?format=csv"),
+    {},
+    {},
+  );
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type"), /text\/csv/);
+  assert.equal((await res.text()).trim(), EVENTS_CSV_HEADER);
+});
+
 test("GET /subnets/{netuid}/events is schema-stable when D1 is cold (never 404)", async () => {
   const res = await handleRequest(req("/api/v1/subnets/7/events"), {}, {});
   assert.equal(res.status, 200);

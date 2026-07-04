@@ -156,6 +156,56 @@ test("GET /accounts/{ss58}/events rejects an unsupported query param", async () 
   assert.equal(res.status, 400);
 });
 
+const EVENTS_CSV_HEADER =
+  "block_number,event_index,event_kind,hotkey,coldkey,netuid,uid,amount_tao,alpha_amount,observed_at,extrinsic_index";
+
+test("GET /accounts/{ss58}/events?format=csv streams the event rows as CSV", async () => {
+  const env = dbWith({
+    events: [
+      {
+        block_number: 200,
+        event_index: 1,
+        event_kind: "StakeAdded",
+        hotkey: SS58,
+        coldkey: null,
+        netuid: 7,
+        uid: 3,
+        amount_tao: 2.0,
+        observed_at: 1750009000000,
+      },
+    ],
+  });
+  const res = await handleRequest(
+    req(`/api/v1/accounts/${SS58}/events?format=csv&kind=StakeAdded`),
+    env,
+    {},
+  );
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type"), /text\/csv/);
+  assert.match(
+    res.headers.get("content-disposition") ?? "",
+    /attachment; filename="/,
+  );
+  const lines = (await res.text()).trim().split("\r\n");
+  assert.equal(lines[0], EVENTS_CSV_HEADER);
+  assert.equal(lines.length, 2);
+  const cells = lines[1].split(",");
+  assert.equal(cells[0], "200"); // block_number
+  assert.equal(cells[2], "StakeAdded"); // event_kind
+  assert.equal(cells[7], "2"); // amount_tao
+});
+
+test("GET /accounts/{ss58}/events?format=csv emits a header-only CSV when cold", async () => {
+  const res = await handleRequest(
+    req(`/api/v1/accounts/${SS58}/events?format=csv`),
+    {},
+    {},
+  );
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get("content-type"), /text\/csv/);
+  assert.equal((await res.text()).trim(), EVENTS_CSV_HEADER);
+});
+
 test("GET /accounts/{ss58}/subnets returns the cross-subnet footprint (#1347)", async () => {
   const env = dbWith({
     registrations: [
