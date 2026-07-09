@@ -1650,7 +1650,7 @@ function normalizeBlockEvent(raw: unknown): BlockEvent | null {
     amount_tao: amount,
     observed_at: firstString(raw.observed_at),
     extrinsic_index: firstFiniteNumber(raw.extrinsic_index),
-    alpha_amount: amount,
+    alpha_amount: firstFiniteNumber(raw.alpha_amount) ?? null,
   };
 }
 
