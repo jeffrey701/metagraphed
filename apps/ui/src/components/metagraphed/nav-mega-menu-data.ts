@@ -105,14 +105,14 @@ export const MEGA_PANELS: MegaPanel[] = [
     apiPath: "/api/v1/endpoints",
     browse: [
       { to: "/endpoints", label: "All endpoints" },
-      { to: "/endpoints", search: { kind: "rpc" }, label: "Root RPC" },
-      { to: "/endpoints", search: { kind: "wss" }, label: "WSS" },
-      { to: "/endpoints", search: { archive: "1" }, label: "Archive-capable" },
-      { to: "/endpoints", search: { pool: "eligible" }, label: "Pool-eligible" },
+      { to: "/endpoints", search: { category: "rpc" }, label: "Root RPC" },
+      { to: "/endpoints", search: { category: "wss" }, label: "WSS" },
+      { to: "/endpoints", search: { eligibility: "archive-capable" }, label: "Archive-capable" },
+      { to: "/endpoints", search: { eligibility: "pool-member" }, label: "Pool-eligible" },
     ],
     filters: [
-      { to: "/endpoints", search: { incidents: "recent" }, label: "Recent incidents" },
-      { to: "/endpoints", search: { stale: "1" }, label: "Stale probes" },
+      { to: "/endpoints", search: { health: "down" }, label: "Recent incidents" },
+      { to: "/endpoints", search: { health: "unknown" }, label: "Stale probes" },
     ],
   },
   {
