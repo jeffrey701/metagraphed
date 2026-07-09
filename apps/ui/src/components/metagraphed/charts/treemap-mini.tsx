@@ -1,4 +1,5 @@
 import { classNames } from "@/lib/metagraphed/format";
+import { collapseSmallTreemapTiles } from "@/lib/metagraphed/treemap-collapse";
 
 export interface TreemapMiniDatum {
   label: string;
@@ -117,7 +118,8 @@ interface Props {
  * (e.g. validator stake share within a subnet).
  */
 export function TreemapMini({ data, className, formatValue = String, ariaLabel }: Props) {
-  const tiles = squarify(data);
+  // Fold the illegibly-small tail into a single "+N more" tile before layout (#3937).
+  const tiles = squarify(collapseSmallTreemapTiles(data));
   if (tiles.length === 0) return null;
 
   const label =
