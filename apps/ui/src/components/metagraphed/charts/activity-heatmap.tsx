@@ -125,8 +125,12 @@ export function ActivityHeatmap({ netuid, weeks = 12 }: Props) {
               {col.map((c) => (
                 <Tooltip key={c.key} delayDuration={120}>
                   <TooltipTrigger asChild>
-                    <div
-                      className="aspect-square rounded-[2px] border border-border/40"
+                    {/* A focusable <button> (not a bare div) so keyboard users can
+                        reach each day and reveal its Radix tooltip — the tooltip
+                        only shows on focus for genuinely focusable triggers (#3955). */}
+                    <button
+                      type="button"
+                      className="aspect-square w-full rounded-[2px] border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       style={{ background: tone(c.score, maxScore) }}
                       aria-label={`${c.key}: ${c.probes} probes, ${c.incidents} incidents`}
                     />
