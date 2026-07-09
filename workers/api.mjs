@@ -168,6 +168,7 @@ import {
   handleSudo,
   handleSudoKey,
   handleGovernanceConfigChanges,
+  handleRuntime,
 } from "./request-handlers/entities.mjs";
 import {
   canonicalCompareCachePath,
@@ -331,6 +332,7 @@ import {
   PERCENTILES_PATH_PATTERN,
   RETIRED_CURRENT_HEALTH_ARTIFACT_PATTERN,
   resolveClientIp,
+  RUNTIME_VERSIONS_PATH_PATTERN,
   SUBNET_HISTORY_PATH_PATTERN,
   SUBNET_HYPERPARAMS_PATH_PATTERN,
   SUBNET_HYPERPARAMS_HISTORY_PATH_PATTERN,
@@ -2253,6 +2255,11 @@ export async function handleRequest(request, env = {}, ctx = {}) {
     if (GOVERNANCE_CONFIG_CHANGES_PATH_PATTERN.test(resolved.url.pathname)) {
       return handleGovernanceConfigChanges(request, env, resolved.url);
     }
+    if (RUNTIME_VERSIONS_PATH_PATTERN.test(resolved.url.pathname)) {
+      return withEdgeCache(request, ctx, env, "runtime-versions", () =>
+        handleRuntime(request, env, resolved.url),
+      );
+    }
     if (resolved.url.pathname === "/api/v1/incidents") {
       return withEdgeCache(request, ctx, env, "global-incidents", () =>
         handleGlobalIncidents(request, env, resolved.url),
@@ -2510,7 +2517,8 @@ function isMainnetOnlyApiPath(pathname) {
     EXTRINSIC_DETAIL_PATH_PATTERN.test(pathname) ||
     SUDO_CALLS_PATH_PATTERN.test(pathname) ||
     SUDO_KEY_PATH_PATTERN.test(pathname) ||
-    GOVERNANCE_CONFIG_CHANGES_PATH_PATTERN.test(pathname)
+    GOVERNANCE_CONFIG_CHANGES_PATH_PATTERN.test(pathname) ||
+    RUNTIME_VERSIONS_PATH_PATTERN.test(pathname)
   );
 }
 
