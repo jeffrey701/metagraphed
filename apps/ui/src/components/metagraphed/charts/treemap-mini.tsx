@@ -25,10 +25,16 @@ interface Rect {
 
 const sum = (ns: number[]) => ns.reduce((a, b) => a + b, 0);
 
-// A tile only shows its value readout when it is large enough to fit one without
-// clipping — width/height are percentages of the map box.
-const MIN_TILE_W_FOR_VALUE = 12;
-const MIN_TILE_H_FOR_VALUE = 14;
+// A tile only shows its readouts when it is large enough to fit them without
+// clipping — width/height are percentages of the map box. The label needs less
+// room than the label+value pair; below the label threshold a squashed tail tile
+// (common when one validator dominates the stake) shows nothing inline — its
+// name/value/share stay on the title tooltip — rather than clipping to a bare
+// "#" or stacking its value on top of its own label (#3937).
+const MIN_TILE_W_FOR_LABEL = 11;
+const MIN_TILE_H_FOR_LABEL = 13;
+const MIN_TILE_W_FOR_VALUE = 13;
+const MIN_TILE_H_FOR_VALUE = 22;
 
 /** Worst (largest) aspect ratio in a row laid along `side`. */
 function worstRatio(areas: number[], side: number): number {
@@ -147,9 +153,11 @@ export function TreemapMini({ data, className, formatValue = String, ariaLabel }
             className="flex h-full w-full flex-col justify-between rounded-sm border border-background/40 p-1.5"
             style={{ background: t.color ?? "var(--accent)" }}
           >
-            <span className="truncate font-mono text-[10px] font-medium leading-none text-accent-foreground">
-              {t.label}
-            </span>
+            {t.w > MIN_TILE_W_FOR_LABEL && t.h > MIN_TILE_H_FOR_LABEL ? (
+              <span className="truncate font-mono text-[10px] font-medium leading-none text-accent-foreground">
+                {t.label}
+              </span>
+            ) : null}
             {t.w > MIN_TILE_W_FOR_VALUE && t.h > MIN_TILE_H_FOR_VALUE ? (
               <span className="truncate font-mono text-[9px] leading-none text-accent-foreground/80">
                 {formatValue(t.value)}
