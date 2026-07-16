@@ -1657,6 +1657,20 @@
       "notes": "Root->128 accuracy audit re-review pass (#5903): confirmed mantis123.com is a live network console (previously only cited via website_url, not tracked), added as a website surface; discovered 2 new no-param public subnet-api endpoints (dashboard snap/meta, history/incentive) by reading the console's app.js, both live-tested and free of wallet/hotkey data; fixed 3 missing probe blocks."
     },
     {
+      "netuid": 124,
+      "slug": "sn-124",
+      "decision": "maintainer-reviewed",
+      "reviewed_at": "2026-07-16T00:00:00.000Z",
+      "confidence": "high",
+      "source_urls": [
+        "https://github.com/swarm-subnet/swarm",
+        "https://swarm124.com/",
+        "https://github.com/swarm-subnet/swarm/blob/main/docs/king_of_the_hill.md",
+        "https://github.com/swarm-subnet/swarm/blob/main/swarm/validator/backend_api.py"
+      ],
+      "notes": "Root->128 accuracy audit first review pass (#5903): promoted from community-seeded/unreviewed. Added website (swarm124.com) and source-repo surfaces, fixed 4 missing probe blocks on pre-existing community-submitted surfaces, and added a new public no-param surface (kings/diagnostics) explicitly documented alongside the existing kings/active route. Confirmed via backend_api.py that the SSE event stream and validator sync/next-task routes all require signed per-request auth headers -- not promotable."
+    },
+    {
       "netuid": 125,
       "slug": "eightball",
       "decision": "maintainer-reviewed",
