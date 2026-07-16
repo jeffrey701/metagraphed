@@ -42183,6 +42183,28 @@
         "parameters": [
           {
             "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "subnet",
+                "surface",
+                "provider"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "netuid",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
             "name": "q",
             "required": false,
             "schema": {
@@ -42225,10 +42247,10 @@
             "required": false,
             "schema": {
               "enum": [
-                "kind",
                 "netuid",
                 "slug",
-                "title"
+                "title",
+                "type"
               ],
               "type": "string"
             }
@@ -42380,6 +42402,28 @@
         "parameters": [
           {
             "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "subnet",
+                "surface",
+                "provider"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "netuid",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
             "name": "q",
             "required": false,
             "schema": {
@@ -42422,10 +42466,10 @@
             "required": false,
             "schema": {
               "enum": [
-                "kind",
                 "netuid",
                 "slug",
-                "title"
+                "title",
+                "type"
               ],
               "type": "string"
             }
