@@ -13,8 +13,11 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { AppShell } from "@/components/metagraphed/app-shell";
+import { ApiSourceFooter } from "@/components/metagraphed/api-source-footer";
 import {
   PageHero,
+  ActionBar,
+  ShareButton,
   CopyButton,
   ExternalLink,
   McpToolsList,
@@ -100,12 +103,18 @@ function AgentsPage() {
         live
         title="Use AI to explore Bittensor"
         description="Point any agent at metagraphed — over MCP, a typed SDK, or plain HTTP — and it can find, explain, and call the right Bittensor subnet for a task. No key, no account."
+        actions={
+          <ActionBar>
+            <ShareButton bare />
+          </ActionBar>
+        }
       />
       <QueryErrorBoundary>
         <Suspense fallback={<Skeleton className="h-[40rem] w-full" />}>
           <AgentsBody />
         </Suspense>
       </QueryErrorBoundary>
+      <ApiSourceFooter paths={["/api/v1/agent-resources"]} />
     </AppShell>
   );
 }
